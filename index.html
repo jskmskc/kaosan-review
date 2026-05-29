@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>扫码评价 - 科目三考场</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 40px 30px;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    text-align: center;
+  }
+  h1 {
+    font-size: 22px;
+    color: #333;
+    margin-bottom: 6px;
+  }
+  .subtitle {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+  .stars {
+    font-size: 42px;
+    color: #f5a623;
+    letter-spacing: 8px;
+    margin-bottom: 20px;
+  }
+  #reviewText {
+    font-size: 17px;
+    line-height: 1.7;
+    color: #444;
+    background: #f8f9ff;
+    border-radius: 12px;
+    padding: 20px 18px;
+    margin-bottom: 20px;
+    min-height: 100px;
+    text-align: left;
+  }
+  .btn-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .btn {
+    flex: 1;
+    padding: 12px 0;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: transform 0.1s;
+    font-weight: 600;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+  }
+  .btn-copy {
+    background: #eee;
+    color: #333;
+  }
+  .hint {
+    color: #aaa;
+    font-size: 12px;
+    margin-top: 4px;
+  }
+  .footer {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
+    font-size: 13px;
+    color: #bbb;
+  }
+  .badge {
+    display: inline-block;
+    background: #e8f5e9;
+    color: #2e7d32;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+</style>
+</head>
+<body>
+<div class="card" id="app">
+  <h1>🚗 科目三考试评价</h1>
+  <p class="subtitle">请为我们的考场服务打星</p>
+
+  <div class="stars">⭐⭐⭐⭐⭐</div>
+  <div class="badge">✅ 优质考场 · 通过率高</div>
+
+  <div id="reviewText">加载中...</div>
+
+  <div class="btn-group">
+    <button class="btn btn-primary" onclick="generateReview()">🔄 换一条</button>
+    <button class="btn btn-copy" onclick="copyReview()">📋 复制</button>
+  </div>
+  <p class="hint">每次扫码自动生成不一样的五星好评</p>
+
+  <div class="footer">
+    本考场 · 用心服务每位学员
+  </div>
+</div>
+
+<script>
+// ===== 好评素材库（可自定义修改） =====
+const starters = [
+  "今天在考场练了一圈，感觉特别好！",
+  "这个考场真的太棒了，必须给好评！",
+  "朋友推荐的考场，果然名不虚传。",
+  "之前还担心科目三难，来了才发现…",
+  "带教老师态度超好，很耐心。",
+  "第二次来这个考场了，依然很满意。",
+  "考场环境干净整洁，设施很新。",
+  "终于找到靠谱的考场了，强烈推荐！",
+];
+
+const middles = [
+  "路线清晰，标志明确，每条线路都跑得很顺。",
+  "安全员很专业，不会故意刁难，全程都很和气。",
+  "模拟考试的车况很好，跟考试车一样，练起来心里有底。",
+  "考前讲解特别详细，哪些容易扣分的点都说清楚了。",
+  "场地大，路线多，上午下午都跑了好几圈，练得很充分。",
+  "工作人员态度都很友善，问什么都耐心解答。",
+  "考试流程讲解得很清楚，考完还有什么问题也帮忙分析。",
+  "从进门到练车结束，整个流程都很顺畅，效率高。",
+];
+
+const endings = [
+  "一把过了！感谢各位教练和工作人员！",
+  "强烈推荐给正在准备科目三的朋友！",
+  "这个考场通过率真的高，安心选这里就对了。",
+  "练完信心大增，考试稳稳的！",
+  "下次科目二也打算来这里。",
+  "价格实惠，服务到位，值得推荐。",
+  "五星好评，值得信赖的考场！",
+  "氛围很好，紧张感少了很多，好评！",
+];
+
+// 也支持组合式长评
+const longReviews = [
+  "考场秩序很好，工作人员很负责，模拟考试的路线和正式考试基本一致，练完之后对考试路线心里有数了。教练也很耐心，每个细节都讲到，推荐！",
+  "第一次来这个考场，体验超出预期。模拟车辆很新，安全员讲解得很详细，关键扣分点都反复强调了几遍。练完觉得踏实很多，五星好评⭐⭐⭐⭐⭐",
+  "朋友介绍来的，说这个考场通过率高，来了发现确实不错。场地大，路况好，教练教得也认真，有问必答。练了两次就找到感觉了，感谢教练！",
+  "体验非常好！从预约到场地上车，流程都很顺利。教练很专业，指出了我之前没注意到的几个问题，改完立马顺了很多，强烈安利！",
+  "考场干净整洁，工作人员态度好，模拟考试的安排也很合理，不会等太久。练完之后对考试有信心多了，希望一把过！",
+];
+
+function pick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function generateReview() {
+  let text;
+
+  // 60% 概率用组合式，40% 概率用长评
+  if (Math.random() < 0.6) {
+    text = pick(starters) + pick(middles) + pick(endings);
+  } else {
+    text = pick(longReviews);
+  }
+
+  document.getElementById('reviewText').textContent = text;
+}
+
+function copyReview() {
+  const text = document.getElementById('reviewText').textContent;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.querySelector('.btn-copy');
+      btn.textContent = '✅ 已复制';
+      setTimeout(() => { btn.textContent = '📋 复制'; }, 1500);
+    });
+  } else {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    alert('已复制到剪贴板');
+  }
+}
+
+// 首次加载自动生成
+generateReview();
+</script>
+</body>
+</html>
